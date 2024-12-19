@@ -42,11 +42,31 @@ public class DemoLambdaFunctionalTypes {
 
     @Test
     void demoLambdaGame() {
-        var f1 = movie -> movie.getYear() == 1984;
-        var f2 = movie -> movie.getYear() / 10;
-        var f3 = x -> x * x + 1;
-        var f4 = year -> Movie.builder().title("Dummy Movie").year(year).build();
-        var f5 = movie -> Movie.builder()
+        Function<Movie, Boolean> f1 = movie -> movie.getYear() == 1984;
+        // Better: Predicate (return type = bool)
+        Predicate<Movie> f1bis = movie -> movie.getYear() == 1984;
+
+        Function<Movie, Integer> f2 = movie -> movie.getYear() / 10;
+        Function<Movie, Short> f2bis = movie -> (short) (movie.getYear() / 10);
+
+        // Movie -> int
+        ToIntFunction<Movie> f2ter = movie -> movie.getYear() / 10; // return type is int
+
+        // int -> Movie
+        IntFunction<Movie> f3 = year -> Movie.builder()
+                .title("Dummy Movie")
+                .year((short) year)
+                .build();
+
+        Function<Integer, Integer> f4 = x -> x * x + 1;
+        UnaryOperator<Integer> f4bis = x -> x * x + 1;
+        IntUnaryOperator f4ter = x -> x * x + 1;
+
+        Function<Movie, Movie> f5 = movie -> Movie.builder()
+                .title(movie.getTitle())
+                .year(movie.getYear())
+                .build();
+        UnaryOperator<Movie> f5bis = movie -> Movie.builder()
                 .title(movie.getTitle())
                 .year(movie.getYear())
                 .build();

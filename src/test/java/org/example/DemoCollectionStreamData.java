@@ -8,6 +8,7 @@ import org.example.tool.CsvUtils;
 import org.example.tool.FilePathResourceUtils;
 import org.junit.jupiter.api.*;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -62,12 +63,38 @@ public class DemoCollectionStreamData {
     }
 
     // Exercise: count movies and movies from year 1984
+    @Test
+    void demoCount(){
+        long nbMovie1984 = movieLines.stream()
+                .map(CsvMovie::lineToMovie)
+                .filter((Movie movie) -> movie.getYear() == 1984)
+                .peek(System.out::println)
+                .count();
+        System.out.println(MessageFormat.format("Movies: total = {0}; year 1984 = {1}",
+                movieLines.size(),
+                nbMovie1984
+        ));
+    }
 
     // Exercise: filter movies by year = 1984,
     //      + verify year with peek,
     //      + extract title,
     //      + sort titles
     //      + concatenate titles with separator ', '
+    @Test
+    void demoCollectionStreamData4() {
+        String titles = movieLines.stream()
+                .map(CsvMovie::lineToMovie)
+                .filter(movie -> movie.getYear() == 1984)
+                .peek(l -> System.out.println("Step 1- filtre sur année: " + l))
+                .map(Movie::getTitle)
+                .peek(l -> System.out.println("Step 2 - extract titre: " + l))
+                .sorted() // collect to sort then stream again
+                .peek(l -> System.out.println("Step 3 - after sort: " + l))
+                .collect(Collectors.joining(", "));
+        System.out.println();
+        System.out.println(titles);
+    }
 
 
     // Exercise: group movies by year:

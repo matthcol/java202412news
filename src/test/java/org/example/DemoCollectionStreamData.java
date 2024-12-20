@@ -9,14 +9,15 @@ import org.example.tool.CsvUtils;
 import org.example.tool.FilePathResourceUtils;
 import org.example.tool.StreamUtils;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import java.text.Collator;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.NavigableSet;
+import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DemoCollectionStreamData {
     static List<String> personLines;
@@ -135,18 +136,124 @@ public class DemoCollectionStreamData {
 
 
     // Sorting
+    // - primitive types: < + == (natural order)
+    // - object type:
+    //      * implements Comparable (natural order)
+    //      * external: Comparator (FunctionalInterface)
 
     @Test
-    void demoSortIntro(){
+    void demoSortIntroPrimitive(){
         int[] numberArray = { 12, 23, 7, 8, 55, -1, 101};
-        List<Integer> numberList = null;
-        NavigableSet<Integer> numberSet = null;
+        List<Integer> numberList = Arrays.stream(numberArray)
+                .boxed()
+                .collect(Collectors.toCollection(ArrayList::new));
+        NavigableSet<Integer> numberSet = new TreeSet<>(numberList); // natural order of type int
+        System.out.println("A: " + Arrays.toString(numberArray));
+        System.out.println("L: " + numberList);
+        System.out.println("S: " + numberSet);
+        System.out.println();
 
-        // TODO: sort array, list, sorted set
+        // sorting array
         Arrays.sort(numberArray); // natural order of type int
-        System.out.println(Arrays.toString(numberArray));
+
+        // sorting list
+        // - sol1: new list
+        var numberListSorted = numberList.stream()
+                .sorted()
+                .toList();
+        // - sol2: in place
+        Collections.sort(numberList);
+        // numberList.sort(?); // needs a comparator
+        System.out.println("A: " + Arrays.toString(numberArray));
+        System.out.println("L (new): " + numberListSorted);
+        System.out.println("L (old): " + numberList);
     }
 
+    @Test
+    void demoSortIntroComparable(){
+        Stream.of("Toulouse", "Montauban", "Lille")
+                .sorted() // natural order of type String: override of method Comparable.compareTo
+                .forEach(System.out::println);
+        System.out.println();
+
+        Stream.of("Toulouse", "Montauban", "Lille", "lyon")
+                .sorted() // natural order of type String: override of method Comparable.compareTo
+                .forEach(System.out::println);
+        System.out.println();
+    }
+
+    @Test
+    void demoSortIntroComparator(){
+        Stream.of("Toulouse", "Montauban", "Lille", "lyon")
+                .sorted(String::compareToIgnoreCase)
+                .forEach(System.out::println);
+    }
+
+    @Test
+    void demoSortIntroComparator2(){
+        var locale = Locale.getDefault(); // fr_FR
+        System.out.println(locale);
+        locale = Locale.FRENCH;
+        System.out.println(locale);
+        locale = Locale.of("fr", "FR");
+        System.out.println(locale);
+        System.out.println();
+        var collator = Collator.getInstance(locale);
+
+        Stream.of(
+                "été", "étuve", "étage",
+                        "cœur", "cobra", "corde",
+                        "hameçon",
+                        "garçon", "garde", "Garage"
+                )
+                .sorted(collator::compare)
+                .forEach(System.out::println);
+    }
+
+    // comparator before Java8 (or anonymous class)
+    class StringComparatorCaseInsensitive implements Comparator<String>{
+        @Override
+        public int compare(String s1, String s2) {
+            return s1.compareToIgnoreCase(s2);
+        }
+    }
+
+    @Test
+    void demoSortIntroComparatorBeforeJava8(){
+        Comparator<String> cmp = new StringComparatorCaseInsensitive();
+        Stream.of("Toulouse", "Montauban", "Lille", "lyon")
+                .sorted(cmp)
+                .forEach(System.out::println);
+    }
+
+
+
+
+    // sort movies
+
+
+
+    @ParameterizedTest
+    @MethodSource("org.example.fixture.MovieComparatorSource#source")
+    void demoSortMovies(Comparator<Movie> cmp){
+
+        // use comparator with:
+        // Collections.sort
+        // List.sort
+        // Stream.sorted()
+        // SortedSet/NavigableSet
+        var sortedMovies = movieLines.stream()
+                .map(CsvMovie::lineToMovie)
+                // .sorted() // java.lang.ClassCastException: class org.example.data.Movie cannot be cast to class java.lang.Comparable
+                .sorted(cmp)
+                .toList();
+        sortedMovies.stream()
+                .skip(500)
+                .limit(20)
+                .forEach(System.out::println);
+        System.out.println("...");
+        System.out.println(sortedMovies.getLast());
+    }
 
 
 

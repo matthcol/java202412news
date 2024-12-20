@@ -24,18 +24,23 @@ public class MovieComparatorSource {
                         Comparator.comparing(Movie::getYear))),
                 Arguments.of(Named.of("year asc, title asc",
                         Comparator.comparing(Movie::getYear)
-                        .thenComparing(Movie::getTitle))),
-
-                // year desc, title case insensitive
+                        .thenComparing(Movie::getTitle)
+                )),
                 Arguments.of(Named.of("year desc, title asc CI",
                         Comparator.comparingInt(Movie::getYear).reversed()
-                                .thenComparing(Movie::getTitle, String::compareToIgnoreCase))),
-                // title locale en, year
+                                .thenComparing(Movie::getTitle, String::compareToIgnoreCase)
+                )),
                 Arguments.of(Named.of("title asc (EN), year asc",
                         Comparator.comparing(Movie::getTitle, collatorEnglish::compare)
                                 .thenComparingInt(Movie::getYear)
-                        ))
-                // duration desc, title case insensitive
+                )),
+                Arguments.of(Named.of("duration desc, title asc (CI)",
+                        Comparator.comparing(Movie::getDuration,
+                                        Comparator.nullsLast(Comparator.reverseOrder())
+                                )
+                                .thenComparing(Movie::getTitle, String.CASE_INSENSITIVE_ORDER)
+                ))
+
         );
     }
 }

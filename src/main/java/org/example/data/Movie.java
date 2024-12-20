@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-public class Movie {
+public class Movie implements EntityWithIntId {
     int id;
     String title;
     short year;
-    Short duration;
-    String synopsis;
-    String posterUri;
+    Short duration; // nullable
+    String synopsis; // nullable
+    String posterUri; // nullable
 }

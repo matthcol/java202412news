@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 
-public class Person {
+public class Person implements EntityWithIntId {
 
     private int id;
 

@@ -7,9 +7,11 @@ import org.example.data.Person;
 import org.example.function.TriPredicate;
 import org.example.tool.CsvUtils;
 import org.example.tool.FilePathResourceUtils;
+import org.example.tool.EntityOptionalUtils;
 import org.example.tool.StreamUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.text.Collator;
@@ -250,6 +252,10 @@ public class DemoCollectionStreamData {
 
         // display as sample
         sortedMovies.stream()
+                .limit(10)
+                .forEach(System.out::println);
+        System.out.println("...");
+        sortedMovies.stream()
                 .skip(500)
                 .limit(20)
                 .forEach(System.out::println);
@@ -257,10 +263,46 @@ public class DemoCollectionStreamData {
         System.out.println(sortedMovies.getLast());
     }
 
+    @Test
+    void demoFilterNull(){
+        var nbMovieWithNoDuration = movieLines.stream()
+                .map(CsvMovie::lineToMovie)
+                .map(Movie::getDuration)
+                .filter(Objects::isNull)  // Java 7: Objects
+                .count();
+
+        var nbMovieWithDuration = movieLines.stream()
+                .map(CsvMovie::lineToMovie)
+                .map(Movie::getDuration)
+                .filter(Objects::nonNull)  // Java 8: add this method to Objects
+                .count();
+        System.out.println("Movies with duration: " + nbMovieWithDuration);
+        System.out.println("Movies without duration: " + nbMovieWithNoDuration);
+    }
 
 
+    // Optional Demo part
 
+    @ParameterizedTest
+    @CsvSource({
+            "8351, 1",
+            "0, 1",
+            "8351, -1",
+            "0, -1",
+    })
+    void demoOptional_bothMoviePersonFound(int idMovie, int idPerson){
+        var optPerson = EntityOptionalUtils.findById(
+                personLines.stream().map(CsvPerson::lineToPerson),
+                idPerson
+        );
+        var optMovie = EntityOptionalUtils.findById(
+                movieLines.stream().map(CsvMovie::lineToMovie),
+                idMovie
+        );
+        System.out.println(optPerson);
+        System.out.println(optMovie);
 
+    }
 
 
 

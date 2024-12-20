@@ -4,13 +4,17 @@ import org.example.converter.CsvMovie;
 import org.example.converter.CsvPerson;
 import org.example.data.Movie;
 import org.example.data.Person;
+import org.example.function.TriPredicate;
 import org.example.tool.CsvUtils;
 import org.example.tool.FilePathResourceUtils;
+import org.example.tool.StreamUtils;
 import org.junit.jupiter.api.*;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -104,10 +108,44 @@ public class DemoCollectionStreamData {
     // Exercise: idem by decade
 
 
+    @Test
+    void demoFilterBounds(){
+        short year1 = 1980;
+        short year2 = 1989;
+        var movie1 = Movie.builder()
+                .title("A")
+                .year(year1)
+                .build();
+        var movie2 = Movie.builder()
+                .title("F")
+                .year(year2)
+                .build();
+        // filter
+        TriPredicate<Movie, Movie, Movie> predicate = (m, m1, m2) ->
+                (m.getYear() >= m1.getYear())
+                && (m.getYear() <= m2.getYear())
+                && (m.getTitle().compareTo(m1.getTitle()) >= 0)
+                && (m.getTitle().compareTo(m2.getTitle()) < 0);
+
+        var step1 = movieLines.stream()
+                .map(CsvMovie::lineToMovie);
+        var step2 = StreamUtils.filterBounds(step1, movie1, movie2, predicate);
+        step2.forEach(System.out::println);
+    }
 
 
+    // Sorting
 
+    @Test
+    void demoSortIntro(){
+        int[] numberArray = { 12, 23, 7, 8, 55, -1, 101};
+        List<Integer> numberList = null;
+        NavigableSet<Integer> numberSet = null;
 
+        // TODO: sort array, list, sorted set
+        Arrays.sort(numberArray); // natural order of type int
+        System.out.println(Arrays.toString(numberArray));
+    }
 
 
 

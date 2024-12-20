@@ -247,6 +247,8 @@ public class DemoCollectionStreamData {
                 // .sorted() // java.lang.ClassCastException: class org.example.data.Movie cannot be cast to class java.lang.Comparable
                 .sorted(cmp)
                 .toList();
+
+        // display as sample
         sortedMovies.stream()
                 .skip(500)
                 .limit(20)

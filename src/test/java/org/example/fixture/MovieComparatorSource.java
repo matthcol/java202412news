@@ -4,22 +4,37 @@ import org.example.data.Movie;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.params.provider.Arguments;
 
+import java.text.Collator;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 public class MovieComparatorSource {
 
+    /**
+     * Provide different comparators of movies to use with @MethodSource
+     * in a test accepting a Comparator<Movie>
+     * NB: type Arguments allow to wrap comparator with a name used by
+     * test platform to tag each test case
+     */
     public static Stream<Arguments> source(){
+        var collatorEnglish = Collator.getInstance(Locale.ENGLISH);
         return Stream.of(
                 Arguments.of(Named.of("year asc",
                         Comparator.comparing(Movie::getYear))),
                 Arguments.of(Named.of("year asc, title asc",
                         Comparator.comparing(Movie::getYear)
-                        .thenComparing(Movie::getTitle)))
-                // TODO: other comparisons
+                        .thenComparing(Movie::getTitle))),
 
                 // year desc, title case insensitive
+                Arguments.of(Named.of("year desc, title asc CI",
+                        Comparator.comparingInt(Movie::getYear).reversed()
+                                .thenComparing(Movie::getTitle, String::compareToIgnoreCase))),
                 // title locale en, year
+                Arguments.of(Named.of("title asc (EN), year asc",
+                        Comparator.comparing(Movie::getTitle, collatorEnglish::compare)
+                                .thenComparingInt(Movie::getYear)
+                        ))
                 // duration desc, title case insensitive
         );
     }

@@ -5,14 +5,13 @@ import org.example.converter.CsvPerson;
 import org.example.data.Movie;
 import org.example.data.Person;
 import org.example.function.TriPredicate;
-import org.example.tool.CsvUtils;
-import org.example.tool.FilePathResourceUtils;
-import org.example.tool.EntityOptionalUtils;
-import org.example.tool.StreamUtils;
+import org.example.tool.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.text.Collator;
 import java.text.MessageFormat;
@@ -299,13 +298,70 @@ public class DemoCollectionStreamData {
                 movieLines.stream().map(CsvMovie::lineToMovie),
                 idMovie
         );
+        // display optional boxes
         System.out.println(optPerson);
         System.out.println(optMovie);
 
+        // imperative way
+        System.out.println();
+        if (optMovie.isPresent()) { // or optMovie.isEmpty() for opposite case
+            var movie = optMovie.get();
+            System.out.println("Movie found: " + movie.getTitle() + " " + movie.getYear()); // TODO: formatted string
+        } else {
+            System.out.println("No movie found");
+        }
+
+        // functional way
+        System.out.println();
+        var movieResult = optMovie.orElse(new Movie());
+        System.out.println("Movie or default: " + movieResult);
+
+        System.out.println();
+        optMovie.ifPresent(movie -> System.out.println("Movie found (1): " + movie.getTitle()));
+        optMovie.ifPresentOrElse(
+                movie -> System.out.println("Movie found (2): " + movie.getTitle()),
+                () -> System.out.println("No movie found (2)")
+        );
+
+        optMovie.ifPresent(MoviePersistenceUtils::persistMovie);
+
+        System.out.println();
+        var optTitle = optMovie.map(Movie::getTitle);
+        System.out.println("Optional title: " + optTitle);
+
+        System.out.println();
+        Optional<Map<String, String>> optInfo = optMovie.flatMap(
+                movie -> optPerson.map(
+                        person -> Map.of(
+                                "title", movie.getTitle(),
+                                "name", person.getName()
+                        )
+                )
+        );
+        System.out.println("Optional infos: " + optInfo);
+
+        // transform entity found or else throw
+        System.out.println();
+        var movie2 = optMovie.orElseThrow(IllegalArgumentException::new);
+        var result2 = MessageFormat.format("{0} ({1}}", movie2.getTitle(), movie2.getYear());
+        System.out.println("Movie found transformed: " + result2);
     }
 
-
-
-
+    @ParameterizedTest
+    @ValueSource(strings = {"Toulouse"})
+    @NullSource
+    void demoOptionalBuild(String city){
+        // source sure
+        var optCity = Optional.of("Lille");
+        // source soit ok soit null
+        var optCity2 = Optional.ofNullable(city);
+        // empty box
+        var optCity3 = Optional.empty();
+        Stream.of(optCity, optCity2, optCity3)
+                .forEach(System.out::println);
+        // source soit ok soit null, cas null => exception
+        var optCity4 = Optional.of(city);
+        System.out.println(optCity4);
+    }
 
 }
